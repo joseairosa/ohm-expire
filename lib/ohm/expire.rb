@@ -49,6 +49,7 @@ module Ohm
             #
             # * self
             def create(*args)
+                args.first.merge!(:_default_expire => @expire)
                 object = super(*args)
                 if !object.new? && @expire
                     Ohm.redis.expire(object.key, @expire)
@@ -64,11 +65,14 @@ module Ohm
     # Extends Ohm::Model with new methods
     class Model
 
+        attribute :_default_expire
+
         # Update the ttl of a given Model
         #
         # ==== Attributes
         #
-        # * +model <i>Ohm::Model</i>+ - A Ohm model that will be used to update its ttl
+        # * +model <i>Ohm::Model</i>+ - A Ohm model that will be used to update its ttl. If nil, value will fallback
+        #                               to default expire
         # * +new_ttl <i>Fixnum</i>+ - The new expire amount
         #
         # ==== Returns
@@ -79,7 +83,7 @@ module Ohm
         #
         #   d = Model.create(:hash => "123")
         #   Model.update_ttl(d, 30)
-        def self.update_ttl(model, new_ttl)
+        def self.update_ttl(model, new_ttl=nil)
             unless model.respond_to? :update_ttl
                 model.update_ttl new_ttl
             end
@@ -89,7 +93,7 @@ module Ohm
         #
         # ==== Attributes
         #
-        # * +new_ttl <i>Fixnum</i>+ - The new expire amount
+        # * +new_ttl <i>Fixnum</i>+ - The new expire amount. If nil, value will fallback to default expire
         #
         # ==== Returns
         #
@@ -99,7 +103,9 @@ module Ohm
         #
         #   d = Model.create(:hash => "123")
         #   d.update_ttl(30)
-        def update_ttl new_ttl
+        def update_ttl new_ttl=nil
+            # Load default if no new ttl is specified
+            new_ttl = self._default_expire if new_ttl.nil?
             # Make sure we have a valid value
             new_ttl = -1 if !new_ttl.to_i.is_a?(Fixnum) || new_ttl.to_i < 0
             # Update indices

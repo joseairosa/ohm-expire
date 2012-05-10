@@ -35,11 +35,14 @@ This will create this Ohm Model class with an expire of 5 seconds
 Updating TTL
 ------------
 
-It's easy to update the TTL after creating a Model. Taking the example above:
+It's easy to update the TTL after creating a Model.
+There is also the possibility to simple update the ttl with the default value (the one that was defined on the Model)
+
+Taking the example above:
 
     m = Model.create(:hash => "123")
     m.update_ttl 30 # Updated to 30 seconds
-
+    m.update_ttl # Updated to 5 seconds (Model::TTL)
 
 Getting TTL
 -----------
