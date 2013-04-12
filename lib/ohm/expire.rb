@@ -49,9 +49,10 @@ module Ohm
             #
             # * self
             def create(*args)
+                args = [{}] if args.empty?
                 args.first.merge!(:_default_expire => @expire)
                 object = super(*args)
-                if !object.new? && @expire
+                if object && !object.new? && @expire
                     Ohm.redis.expire(object.key, @expire)
                     Ohm.redis.expire("#{object.key}:_indices", @expire)
                 end
